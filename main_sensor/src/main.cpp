@@ -16,6 +16,8 @@ QTRSensors qtr;
 // Global Variables
 uint16_t sensorValues[SENSOR_COUNT];
 bool isPacing = false;
+String lineMode = "BLACK_LINE";
+uint16_t position = 0;
 
 // Function Declarations
 void flashLED(uint8_t times, uint16_t duration);
@@ -50,10 +52,18 @@ void loop() {
       calibrateSensor();
       Serial2.println("STOP_CALIBRATION");
     }
+    else if (command.startsWith("SET_LINE_MODE ")) {
+      lineMode = command.substring(strlen("SET_LINE_MODE "));
+      lineMode.trim();
+    }
   }
 
   if (isPacing) {
-    uint16_t position = qtr.readLineBlack(sensorValues);
+    if (lineMode == "BLACK_LINE") {
+      position = qtr.readLineBlack(sensorValues);
+    } else {
+      position = qtr.readLineWhite(sensorValues);
+    }
     Serial2.println(position);
   }
 }
@@ -75,21 +85,4 @@ void calibrateSensor() {
     qtr.calibrate();
   }
   digitalWrite(LED_BUILTIN, LOW);
-
-  for (uint8_t i = 0; i < SENSOR_COUNT; i++)
-  {
-    Serial.print(qtr.calibrationOn.minimum[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-
-  // print the calibration maximum values measured when emitters were on
-  for (uint8_t i = 0; i < SENSOR_COUNT; i++)
-  {
-    Serial.print(qtr.calibrationOn.maximum[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-  Serial.println();
-  delay(1000);
 }

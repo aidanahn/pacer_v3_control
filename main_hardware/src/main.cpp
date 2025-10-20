@@ -27,6 +27,7 @@ AS5600 as5600;
 bool isPacing = false;
 int paceDistance = 0;
 int paceMicroseconds = NEUTRAL_THROTTLE;
+String lineMode = "BLACK_LINE";
 
 // Distance Calculation Constants
 const double GEAR_RATIO = (40.0 / 20.0) * (38.0 / 13.0);
@@ -56,6 +57,7 @@ void handleStart();
 void handleStop();
 void handlePID();
 void handleCalibrate();
+void handleLine();
 double getDistanceTraveled();
 
 void setup() {
@@ -75,6 +77,7 @@ void setup() {
   server.on("/stop", HTTP_POST, handleStop);
   server.on("/pid", HTTP_POST, handlePID);
   server.on("/calibrate", HTTP_POST, handleCalibrate);
+  server.on("/line", HTTP_POST, handleLine);
   server.begin();
 
   ServoSetpoint = 7500;
@@ -144,6 +147,14 @@ void handleRoot() {
   html += "<button type='submit'>Stop Pacing</button>";
   html += "</form>";
 
+  html += "<form action='/line' method='POST'>";
+  html += "<select id='lineMode' name='lineMode'>";
+  html += String("<option value='BLACK_LINE'") + (lineMode == "BLACK_LINE" ? " selected" : "") + ">Black Line</option>";
+  html += String("<option value='WHITE_LINE'") + (lineMode == "WHITE_LINE" ? " selected" : "") + ">White Line</option>";
+  html += "</select> ";
+  html += "<button type='submit'>Update</button>";
+  html += "</form>";
+
   html += "<form action='/pid' method='POST'>";
   html += "<label for='servoKp'>Proportional (Kp): </label>";
   html += "<input type='number' id='servoKp' name='servoKp' step='0.001' value='" + String(servoKp, 3) + "'><br>";
@@ -210,6 +221,19 @@ void handleCalibrate() {
         break;
       }
     }
+  }
+
+  server.sendHeader("Location", "/");
+  server.send(303);
+
+  flashLED(5, 75);
+}
+
+void handleLine() {
+  handleStop();
+  if (server.hasArg("lineMode")) {
+    lineMode = server.arg("lineMode");
+    Serial2.println("SET_LINE_MODE " + lineMode);
   }
 
   server.sendHeader("Location", "/");
