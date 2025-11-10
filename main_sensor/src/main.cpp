@@ -8,7 +8,7 @@
 
 // Hardware Configuration
 const uint8_t SENSOR_COUNT = 16;
-const uint8_t SENSOR_PINS[] = {2, 4, 5, 13, 14, 15, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33};
+const uint8_t SENSOR_PINS[] = {32, 33, 26, 27, 23, 25, 21, 22, 18, 19, 14, 15, 5, 13, 2, 4};
 
 // Global Objects
 QTRSensors qtr;
